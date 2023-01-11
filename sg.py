@@ -59,12 +59,14 @@ def DeleteUnusedSecurityGroup():
         if unattached_group_list != []:
             response3 = client.describe_security_groups(GroupIds=unattached_group_list)
             for each in response3['SecurityGroups']:
-                if len(each['IpPermissions']) > 0:
-                    for permission in each['IpPermissions']:
-                        client.revoke_security_group_ingress(GroupId=each['GroupId'],IpPermissions=[permission])
-                if len(each['IpPermissionsEgress']) > 0:
-                    for permission in each['IpPermissionsEgress']:
-                        client.revoke_security_group_egress(GroupId=each['GroupId'],IpPermissions=[permission])
+                respond = input(f"Would you want to invalidate {each['GroupId']}'s Ingress/Egress? y or n: ")
+                if respond == "y" or respond == "Y":
+                    if len(each['IpPermissions']) > 0:
+                        for permission in each['IpPermissions']:
+                            client.revoke_security_group_ingress(GroupId=each['GroupId'],IpPermissions=[permission])
+                    if len(each['IpPermissionsEgress']) > 0:
+                        for permission in each['IpPermissionsEgress']:
+                            client.revoke_security_group_egress(GroupId=each['GroupId'],IpPermissions=[permission])
     except Exception as e:
         print(e)
     
