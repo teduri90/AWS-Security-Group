@@ -9,7 +9,7 @@ import boto3
 ## I recommend for peronsal use only as well. Such as cleaning your own messy SGs
 
 def DeleteUnusedSecurityGroup():
-    client = boto3.client('ec2', region_name='ap-southeast-1')
+    client = boto3.client('ec2', region_name='ap-northeast-2')
     attached_group_list = list()
     unattached_group_list = list()
     all_group_list = list()
@@ -18,9 +18,11 @@ def DeleteUnusedSecurityGroup():
     # List up all the Securiy Groups attached to network interfaces
     response = client.describe_network_interfaces()
     for i in response["NetworkInterfaces"]:
+        #print(i)
         if 'Attachment' in i and i['Attachment']['Status'] == "attached":
             groups = [g['GroupId'] for g in i['Groups']]
-            attached_group_list.append(groups[0])
+            for each in groups:
+                attached_group_list.append(each)
 
     # List up all the Security Groups
     response2 = client.describe_security_groups()
@@ -30,9 +32,11 @@ def DeleteUnusedSecurityGroup():
         if sg['GroupName'] != 'default':
             all_group_list.append(groups2)
         
+    print(all_group_list)
     # Append unused Security Groups to Unattached Group List
     for each in all_group_list:
-        if attached_group_list[0].count(each) < 1:
+
+        if attached_group_list.count(each) < 1:
             unattached_group_list.append(each)
 
     # Loop through In-Use Security Groups to see check if it's referencing other Security Groups
