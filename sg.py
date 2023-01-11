@@ -45,11 +45,13 @@ def DeleteUnusedSecurityGroup():
                     if 'UserIdGroupPairs' in permission:
                         for each2 in permission['UserIdGroupPairs']:
                             unattached_group_list.remove(each2['GroupId'])
+                            attached_group_list.append(each2['GroupId'])
             if len(each['IpPermissionsEgress']) > 0:
                 for permission in each['IpPermissionsEgress']:
                     if 'UserIdGroupPairs' in permission:
                         for each2 in permission['UserIdGroupPairs']:
                             unattached_group_list.remove(each2['GroupId'])
+                            attached_group_list.append(each2['GroupId'])
     except Exception as e:
         print(e)
 
