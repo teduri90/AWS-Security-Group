@@ -71,8 +71,10 @@ def DeleteUnusedSecurityGroup():
     # Delete unused Security Group
     try:
         for each in unattached_group_list:
-            client.delete_security_group(GroupId=each)
-            print(f"${each} deletion success")
+            respond = input(f"Would you want to delete {each}? y or n: ")
+            if respond == "y" or respond == "Y":
+                client.delete_security_group(GroupId=each)
+                print(f"${each} deletion success")
     except Exception as e:
         print(e)
 
