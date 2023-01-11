@@ -35,7 +35,6 @@ def DeleteUnusedSecurityGroup():
     print(all_group_list)
     # Append unused Security Groups to Unattached Group List
     for each in all_group_list:
-
         if attached_group_list.count(each) < 1:
             unattached_group_list.append(each)
 
@@ -67,7 +66,7 @@ def DeleteUnusedSecurityGroup():
     # Revoke all the Security Inbound and Outbound policies on each Seucirty Group
         try:
             if unattached_group_list != []:
-                response3 = client.describe_security_groups(GroupIds=unattached_group_list)
+                response3 = client.describe_security_groups(GroupIds=unattached_group_list)  # if not specified, it returns for all
                 for each in response3['SecurityGroups']:
                     respond = input(f"Would you want to invalidate {each['GroupId']}'s Ingress/Egress and delete the SG? (y or n): ")
                     if respond == "y" or respond == "Y":
