@@ -53,32 +53,36 @@ def DeleteUnusedSecurityGroup():
     except Exception as e:
         print(e)
 
+    print("Attached SG: ", str(attached_group_list))
+    print("Unattached SG: ", str(unattached_group_list))
+    respond = input("Please check the list one more time (y or n): ")
+    if respond == "y" or respond == "Y":
     #### DELETION PART #####
     # Revoke all the Security Inbound and Outbound policies on each Seucirty Group
-    try:
-        if unattached_group_list != []:
-            response3 = client.describe_security_groups(GroupIds=unattached_group_list)
-            for each in response3['SecurityGroups']:
-                respond = input(f"Would you want to invalidate {each['GroupId']}'s Ingress/Egress? y or n: ")
+        try:
+            if unattached_group_list != []:
+                response3 = client.describe_security_groups(GroupIds=unattached_group_list)
+                for each in response3['SecurityGroups']:
+                    respond = input(f"Would you want to invalidate {each['GroupId']}'s Ingress/Egress and delete the SG? (y or n): ")
+                    if respond == "y" or respond == "Y":
+                        if len(each['IpPermissions']) > 0:
+                            for permission in each['IpPermissions']:
+                                client.revoke_security_group_ingress(GroupId=each['GroupId'],IpPermissions=[permission])
+                        if len(each['IpPermissionsEgress']) > 0:
+                            for permission in each['IpPermissionsEgress']:
+                                client.revoke_security_group_egress(GroupId=each['GroupId'],IpPermissions=[permission])
+        except Exception as e:
+            print(e)
+        
+        # Delete unused Security Group
+        try:
+            for each in unattached_group_list:
+                respond = input(f"Would you want to delete {each}? (y or n): ")
                 if respond == "y" or respond == "Y":
-                    if len(each['IpPermissions']) > 0:
-                        for permission in each['IpPermissions']:
-                            client.revoke_security_group_ingress(GroupId=each['GroupId'],IpPermissions=[permission])
-                    if len(each['IpPermissionsEgress']) > 0:
-                        for permission in each['IpPermissionsEgress']:
-                            client.revoke_security_group_egress(GroupId=each['GroupId'],IpPermissions=[permission])
-    except Exception as e:
-        print(e)
-    
-    # Delete unused Security Group
-    try:
-        for each in unattached_group_list:
-            respond = input(f"Would you want to delete {each}? y or n: ")
-            if respond == "y" or respond == "Y":
-                client.delete_security_group(GroupId=each)
-                print(f"${each} deletion success")
-    except Exception as e:
-        print(e)
+                    client.delete_security_group(GroupId=each)
+                    print(f"${each} deletion success")
+        except Exception as e:
+            print(e)
 
 if __name__ == "__main__":
     DeleteUnusedSecurityGroup()
