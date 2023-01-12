@@ -9,8 +9,10 @@ import boto3
 ## I recommend for peronsal use only as well. Such as cleaning your own messy SGs
 
 def DeleteUnusedSecurityGroup():
-    client = boto3.client('ec2', region_name='ap-northeast-2')
+    client = boto3.client('ec2', region_name='ap-southeast-1')
     attached_group_list = list()
+    len_attached_group_list = 0
+    new_group_list = list()
     unattached_group_list = list()
     all_group_list = list()
 
@@ -41,20 +43,33 @@ def DeleteUnusedSecurityGroup():
     # Loop through In-Use Security Groups to see check if it's referencing other Security Groups
     # on both Ingress and Egress
     try:
-        response25 = client.describe_security_groups(GroupIds=attached_group_list)
-        for each in response25['SecurityGroups']:
-            if len(each['IpPermissions']) > 0:
-                for permission in each['IpPermissions']:
-                    if 'UserIdGroupPairs' in permission:
-                        for each2 in permission['UserIdGroupPairs']:
-                            unattached_group_list.remove(each2['GroupId'])
-                            attached_group_list.append(each2['GroupId'])
-            if len(each['IpPermissionsEgress']) > 0:
-                for permission in each['IpPermissionsEgress']:
-                    if 'UserIdGroupPairs' in permission:
-                        for each2 in permission['UserIdGroupPairs']:
-                            unattached_group_list.remove(each2['GroupId'])
-                            attached_group_list.append(each2['GroupId'])
+        response = client.describe_security_groups(GroupIds=attached_group_list)
+        while len(attached_group_list) != len_attached_group_list:
+            if len_attached_group_list != 0:
+                response = client.describe_security_groups(GroupIds=new_group_list)
+            len_attached_group_list = len(attached_group_list)
+            #print("Round", len_attached_group_list, ": ", response)
+            for each in response['SecurityGroups']:
+                if len(each['IpPermissions']) > 0:
+                    for permission in each['IpPermissions']:
+                        if 'UserIdGroupPairs' in permission:
+                            for each2 in permission['UserIdGroupPairs']:
+                                print(each2)
+                                unattached_group_list.remove(each2['GroupId'])
+                                attached_group_list.append(each2['GroupId'])
+                                new_group_list.append(each2['GroupId'])
+                if len(each['IpPermissionsEgress']) > 0:
+                    for permission in each['IpPermissionsEgress']:
+                        if 'UserIdGroupPairs' in permission:
+                            for each2 in permission['UserIdGroupPairs']:
+                                print(each2)
+                                if each2['GroupId'] in unattached_group_list:
+                                    unattached_group_list.remove(each2['GroupId'])
+                                if each2['GroupId'] in attached_group_list:
+                                    attached_group_list.append(each2['GroupId'])
+                                    new_group_list.append(each2['GroupId'])
+                print(len_attached_group_list, " vs. " ,len(attached_group_list))
+                
     except Exception as e:
         print(e)
 
@@ -62,6 +77,7 @@ def DeleteUnusedSecurityGroup():
     print("Unattached SG: ", str(unattached_group_list))
     respond = input("Please check the list one more time (y or n): ")
     if respond == "y" or respond == "Y":
+
     #### DELETION PART #####
     # Revoke all the Security Inbound and Outbound policies on each Seucirty Group
         try:
