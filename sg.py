@@ -49,6 +49,7 @@ def DeleteUnusedSecurityGroup():
                 response = client.describe_security_groups(GroupIds=new_group_list)
             len_attached_group_list = len(attached_group_list)
             #print("Round", len_attached_group_list, ": ", response)
+            new_group_list = []
             for each in response['SecurityGroups']:
                 if len(each['IpPermissions']) > 0:
                     for permission in each['IpPermissions']:
