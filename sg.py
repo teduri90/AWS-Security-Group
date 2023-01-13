@@ -34,7 +34,7 @@ def DeleteUnusedSecurityGroup():
         if sg['GroupName'] != 'default':
             all_group_list.append(groups2)
         
-    print(all_group_list)
+    print("All SG: ", all_group_list)
     # Append unused Security Groups to Unattached Group List
     for each in all_group_list:
         if attached_group_list.count(each) < 1:
@@ -88,8 +88,6 @@ def DeleteUnusedSecurityGroup():
     #### DELETION PART #####
     # Revoke all the Security Inbound and Outbound policies on each Seucirty Group
     ########################
-
-
 
         # try:
         #     if unattached_group_list != []:
